@@ -260,3 +260,91 @@ function renderApp() {
         <div class="bg-slate-50 p-2.5 rounded border border-slate-200"><p class="text-[11px] text-slate-500">Valid Emails</p><p class="text-base font-bold text-slate-900">${stats.validEmailCount} / ${stats.totalOrders}</p></div>
     `;
 }
+
+// INITIALIZATION AND EVENT LISTENERS
+
+window.onload = function() {
+    renderApp();
+
+    // Attach search and filter event listeners
+    document.getElementById('searchInput').addEventListener('input', function() {
+        renderApp();
+    });
+
+    document.getElementById('categoryFilter').addEventListener('change', function() {
+        renderApp();
+    });
+
+    document.getElementById('priceFilterInput').addEventListener('input', function() {
+        renderApp();
+    });
+
+    document.getElementById('resetFiltersBtn').addEventListener('click', function() {
+        document.getElementById('searchInput').value = "";
+        document.getElementById('categoryFilter').value = "";
+        document.getElementById('priceFilterInput').value = "";
+        renderApp();
+    });
+
+    // Product Lookup Listener ( Challenge 6)
+    document.getElementById('productLookupInput').addEventListener('input', function(e) {
+        let query = e.target.value.trim().toLowerCase();
+        let resultDiv = document.getElementById('productLookupResult');
+        let prodMap = buildProductMap(getProcessedDataset());
+
+        if (query === "") {
+            resultDiv.innerText = "Result will show here...";
+            return;
+        }
+
+        if (prodMap.has(query)) {
+            let item = prodMap.get(query);
+            resultDiv.innerHTML = '<span class="text-emerald-600 font-semibold">Match Found:</span> ' + item.name + ' (' + item.category + ') - R ' + item.price.toFixed(2);
+        } else {
+            resultDiv.innerHTML = '<span class="text-rose-600 font-semibold">No product found matching that name.</span>';
+        }
+    });
+
+    // RegExp Manual Tester Listener (Challenge 8)
+    document.getElementById('testRegExpBtn').addEventListener('click', function() {
+        let textVal = document.getElementById('regExpTestInput').value.trim();
+        let resultText = document.getElementById('regExpResultText');
+        
+        let emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        
+        if (textVal === "") {
+            resultText.innerText = "Please enter something to test.";
+            return;
+        }
+        
+        if (emailPattern.test(textVal)) {
+            resultText.innerHTML = '<span class="text-emerald-600 font-medium">Valid Email format!</span>';
+        } else {
+            resultText.innerHTML = '<span class="text-rose-600 font-medium">Invalid Email format.</span>';
+        }
+    });
+
+    // JSON Export Listener (Challenge 7)
+    document.getElementById('exportJsonBtn').addEventListener('click', function() {
+        let jsonOutput = JSON.stringify(rawOrders, null, 2);
+        document.getElementById('importJsonInput').value = jsonOutput;
+        alert("Raw order dataset converted to JSON and pasted in textarea below.");
+    });
+
+    //JSON Import Listener (Challenge 7)
+    document.getElementById('importJsonBtn').addEventListener('click', function() {
+        let rawInput = document.getElementById('importJsonInput').value;
+        try {
+            let parsed = JSON.parse(rawInput);
+            if (Array.isArray(parsed)) {
+                rawOrders = parsed;
+                renderApp();
+                alert("New JSON orders imported and dashboard refreshed!");
+            } else {
+                alert("JSON input must be an array of order objects.");
+            }
+        } catch (err) {
+            alert("JSON Parse Error: " + err.message);
+        }
+    });
+};
