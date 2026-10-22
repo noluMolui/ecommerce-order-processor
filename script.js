@@ -164,3 +164,99 @@ function calculateStatistics(list) {
         uniqueCats: uniqueCategoriesCount
     };
 }
+
+// CHALLENGE 4 & 10: Interface & Rendering
+// ==========================================
+function renderApp() {
+    console.log("Rendering application interface...");
+    let dataset = getProcessedDataset();
+    
+    // Get filter inputs from screen
+    let searchVal = document.getElementById('searchInput').value.toLowerCase();
+    let selectedCat = document.getElementById('categoryFilter').value;
+    let maxPriceVal = parseFloat(document.getElementById('priceFilterInput').value);
+
+    // CHALLENGE 4: Filter dataset
+    let filteredList = [];
+    for (let i = 0; i < dataset.length; i++) {
+        let item = dataset[i];
+        
+        let matchSearch = item.orderId.toLowerCase().includes(searchVal) || item.customerName.toLowerCase().includes(searchVal);
+        let matchCategory = (selectedCat === "" || item.category === selectedCat);
+        let matchPrice = (isNaN(maxPriceVal) || parseFloat(item.price) <= maxPriceVal);
+        
+        if (matchSearch && matchCategory && matchPrice) {
+            filteredList.push(item);
+        }
+    }
+
+    // Render Orders Table Body
+    let tbody = document.getElementById('ordersTableBody');
+    tbody.innerHTML = "";
+    
+    for (let i = 0; i < filteredList.length; i++) {
+        let item = filteredList[i];
+        let tr = document.createElement('tr');
+        tr.className = "hover:bg-slate-50";
+        
+        let emailBadgeHtml = "";
+        if (item.isEmailValid === false) {
+            emailBadgeHtml = '<span class="ml-1 bg-red-100 text-red-700 text-[10px] px-1 rounded font-semibold">Invalid Email</span>';
+        }
+        
+        let recentBadgeHtml = "";
+        if (item.isRecent === true) {
+            recentBadgeHtml = '<span class="ml-1 text-emerald-600 font-bold">● Recent</span>';
+        }
+
+        tr.innerHTML = `
+            <td class="py-2 px-2 font-mono text-slate-600">${item.orderId}</td>
+            <td class="py-2 px-2 font-medium text-slate-900">${item.customerName}</td>
+            <td class="py-2 px-2">${item.email} ${emailBadgeHtml}</td>
+            <td class="py-2 px-2">${item.product}</td>
+            <td class="py-2 px-2"><span class="bg-slate-100 text-slate-700 px-1.5 py-0.5 rounded text-[11px]">${item.category}</span></td>
+            <td class="py-2 px-2 text-right font-medium">R ${parseFloat(item.price).toFixed(2)}</td>
+            <td class="py-2 px-2 text-slate-500">${item.formattedDate} ${recentBadgeHtml}</td>
+        `;
+        tbody.appendChild(tr);
+    }
+
+    document.getElementById('orderCountBadge').innerText = filteredList.length + " Orders Displayed";
+
+    // Render Unique Categories Badges (Challenge 5)
+    let categoriesList = getUniqueCategories(dataset);
+    let categoryContainer = document.getElementById('categoryListContainer');
+    categoryContainer.innerHTML = "";
+    for (let i = 0; i < categoriesList.length; i++) {
+        let badge = document.createElement('span');
+        badge.className = "bg-indigo-50 text-indigo-700 text-xs px-2 py-0.5 rounded font-medium border border-indigo-100";
+        badge.innerText = categoriesList[i];
+        categoryContainer.appendChild(badge);
+    }
+
+    // Populate Category Dropdown Filter options
+    let categorySelect = document.getElementById('categoryFilter');
+    let savedSelected = categorySelect.value;
+    categorySelect.innerHTML = '<option value="">All Categories</option>';
+    for (let i = 0; i < categoriesList.length; i++) {
+        let opt = document.createElement('option');
+        opt.value = categoriesList[i];
+        opt.innerText = categoriesList[i];
+        if (categoriesList[i] === savedSelected) {
+            opt.selected = true;
+        }
+        categorySelect.appendChild(opt);
+    }
+
+    // Render Statistics Summary (Challenge 9)
+    let stats = calculateStatistics(dataset);
+    let statsGrid = document.getElementById('statsGrid');
+    statsGrid.innerHTML = `
+        <div class="bg-slate-50 p-2.5 rounded border border-slate-200"><p class="text-[11px] text-slate-500">Total Orders</p><p class="text-base font-bold text-slate-900">${stats.totalOrders}</p></div>
+        <div class="bg-slate-50 p-2.5 rounded border border-slate-200"><p class="text-[11px] text-slate-500">Total Value</p><p class="text-base font-bold text-slate-900">R ${stats.totalValue}</p></div>
+        <div class="bg-slate-50 p-2.5 rounded border border-slate-200"><p class="text-[11px] text-slate-500">Average Price</p><p class="text-base font-bold text-slate-900">R ${stats.avgPrice}</p></div>
+        <div class="bg-slate-50 p-2.5 rounded border border-slate-200"><p class="text-[11px] text-slate-500">Highest Price</p><p class="text-base font-bold text-slate-900">R ${stats.maxPrice}</p></div>
+        <div class="bg-slate-50 p-2.5 rounded border border-slate-200"><p class="text-[11px] text-slate-500">Recent Orders</p><p class="text-base font-bold text-slate-900">${stats.recentCount}</p></div>
+        <div class="bg-slate-50 p-2.5 rounded border border-slate-200"><p class="text-[11px] text-slate-500">Valid Emails</p><p class="text-base font-bold text-slate-900">${stats.validEmailCount} / ${stats.totalOrders}</p></div>
+    `;
+}
