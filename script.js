@@ -164,9 +164,32 @@ function calculateStatistics(list) {
         uniqueCats: uniqueCategoriesCount
     };
 }
+// CHALLENGE 8: Validate With Patterns (RegExp)
+
+function validateOrder(ord) {
+    // Regex for checking email pattern and Order ID pattern
+    let emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    let idPattern = /^ORD-\d{4}$/;
+    
+    let isEmailValid = emailPattern.test(ord.email);
+    let isIdValid = idPattern.test(ord.orderId);
+    
+    return {
+        orderId: ord.orderId,
+        customerName: ord.customerName,
+        email: ord.email,
+        product: ord.product,
+        category: ord.category,
+        price: ord.price,
+        orderDate: ord.orderDate,
+        isEmailValid: isEmailValid,
+        isIdValid: isIdValid
+    };
+}
+
 
 // CHALLENGE 4 & 10: Interface & Rendering
-// ==========================================
+
 function renderApp() {
     console.log("Rendering application interface...");
     let dataset = getProcessedDataset();
