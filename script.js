@@ -13,3 +13,46 @@ let rawOrders = [
 ];
 
 console.log("Initial raw dataset loaded. Total items:", rawOrders.length);
+
+// CHALLENGE 1: Clean Customer Data
+function cleanStringData(myArray) {
+    let cleanedList = [];
+    
+    // Using a for loop to process each record step-by-step
+    for (let i = 0; i < myArray.length; i++) {
+        let item = myArray[i];
+        
+        // Remove extra spaces from names and emails
+        let trimmedName = item.customerName.trim();
+        let trimmedEmail = item.email.trim();
+        
+        // Convert emails to lowercase
+        let lowerEmail = trimmedEmail.toLowerCase();
+        
+        // Capitalize the first letter of each name word
+        let nameParts = trimmedName.split(" ");
+        let fixedParts = [];
+        for (let j = 0; j < nameParts.length; j++) {
+            let word = nameParts[j];
+            if (word.length > 0) {
+                let formattedWord = word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
+                fixedParts.push(formattedWord);
+            }
+        }
+        let cleanName = fixedParts.join(" ");
+
+        let newObj = {
+            orderId: item.orderId,
+            customerName: cleanName,
+            email: lowerEmail,
+            product: item.product,
+            category: item.category,
+            price: item.price,
+            orderDate: item.orderDate
+        };
+        
+        cleanedList.push(newObj);
+    }
+    
+    return cleanedList;
+}
