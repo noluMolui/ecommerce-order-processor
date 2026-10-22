@@ -56,3 +56,111 @@ function cleanStringData(myArray) {
     
     return cleanedList;
 }
+
+// CHALLENGE 3: Work With Order Dates
+function processOrderDates(arr) {
+    let results = [];
+    let today = new Date();
+    
+    for (let i = 0; i < arr.length; i++) {
+        let item = arr[i];
+        let dateObj = new Date(item.orderDate);
+        
+        // Readable date format
+        let formatted = dateObj.toLocaleDateString();
+        
+        // Calculate days difference
+        let diffTime = Math.abs(today - dateObj);
+        let diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        
+        let recentCheck = false;
+        if (diffDays <= 30) {
+            recentCheck = true;
+        } else {
+            recentCheck = false;
+        }
+        
+        results.push({
+            orderId: item.orderId,
+            customerName: item.customerName,
+            email: item.email,
+            product: item.product,
+            category: item.category,
+            price: item.price,
+            orderDate: item.orderDate,
+            isEmailValid: item.isEmailValid,
+            isIdValid: item.isIdValid,
+            dateObj: dateObj,
+            formattedDate: formatted,
+            diffDays: diffDays,
+            isRecent: recentCheck
+        });
+    }
+    
+    results.sort(function(a, b) {
+        return b.dateObj - a.dateObj;
+    });
+    
+    return results;
+}
+function getProcessedDataset() {
+    let cleaned = cleanStringData(rawOrders);
+    
+    let validated = [];
+    for (let i = 0; i < cleaned.length; i++) {
+        validated.push(validateOrder(cleaned[i]));
+    }
+    
+    let processed = processOrderDates(validated);
+    return processed;
+}
+
+//CHALLENGE 2 & 9: Calculations & Statistics
+
+function calculateStatistics(list) {
+    let totalVal = 0;
+    let pricesArray = [];
+    
+    for (let i = 0; i < list.length; i++) {
+        let numPrice = parseFloat(list[i].price);
+        totalVal = totalVal + numPrice;
+        pricesArray.push(numPrice);
+    }
+    
+    let averageVal = 0;
+    if (list.length > 0) {
+        averageVal = totalVal / list.length;
+    }
+    
+    let maxPrice = 0;
+    let minPrice = 0;
+    if (pricesArray.length > 0) {
+        maxPrice = Math.max(...pricesArray);
+        minPrice = Math.min(...pricesArray);
+    }
+    
+    let validEmailCount = 0;
+    let recentOrdersCount = 0;
+    
+    for (let i = 0; i < list.length; i++) {
+        if (list[i].isEmailValid === true) {
+            validEmailCount++;
+        }
+        if (list[i].isRecent === true) {
+            recentOrdersCount++;
+        }
+    }
+    
+    let uniqueCategoriesCount = getUniqueCategories(list).length;
+
+    return {
+        totalOrders: list.length,
+        totalValue: totalVal.toFixed(2),
+        avgPrice: averageVal.toFixed(2),
+        maxPrice: maxPrice.toFixed(2),
+        minPrice: minPrice.toFixed(2),
+        validEmailCount: validEmailCount,
+        recentCount: recentOrdersCount,
+        uniqueCats: uniqueCategoriesCount
+    };
+}
